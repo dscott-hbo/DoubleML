@@ -77,7 +77,7 @@ for i in range(MC_no):
     ######################################################################    
     # OLS --------------------------------------------------     
     ######################################################################
-    OLS = sm.OLS(Y,D)
+    OLS = sm.OLS(Y,np.column_stack((X,D)))
     results = OLS.fit()
     #save OLS estimate into theta_estimate array
     theta_est[i][0] = results.params[0]
