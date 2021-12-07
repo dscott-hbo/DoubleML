@@ -1,5 +1,22 @@
 # DoubleML
 
+Using the Python package **DoubleML**, an implementation of the double / debiased machine learning framework of
+[Chernozhukov et al. (2018)](https://doi.org/10.1111/ectj.12097).
+
+Documentation and website: [https://docs.doubleml.org/](https://docs.doubleml.org/)
+
+## Installation requirements
+
+- Python
+- sklearn
+- numpy
+- scipy
+- pandas
+- statsmodels
+- joblib
+- seaborn
+- doubleml
+
 ### Repository DoubleML simulations
 
     .
