@@ -1,7 +1,7 @@
 # DoubleML
 
 Using the Python package **DoubleML**, an implementation of the double / debiased machine learning framework of
-[Chernozhukov et al. (2018)](https://doi.org/10.1111/ectj.12097).
+[Chernozhukov et al. (2018)](https://doi.org/10.1111/ectj.12097). Currently only implementing Partially linear regression models.
 
 Documentation and website: [https://docs.doubleml.org/](https://docs.doubleml.org/)
 
