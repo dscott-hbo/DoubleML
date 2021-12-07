@@ -3,7 +3,7 @@
 ### Repository DoubleML simulations
 
     .
-    ├── simulationLinearRegression/                  
+    ├── simulation/                  
 		 ├── simulation_features.py  # script to run initial simulation of coefficient estimation
 		 ├── ThetaDistributionPlots/ # initial simulation of estimators comparison with gaussian data OLS. vs DML
 		 ├── Bernoulli/             # comparison of gaussian features vs bernoulli features
