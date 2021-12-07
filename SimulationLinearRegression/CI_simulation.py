@@ -3,12 +3,13 @@
 """
 Created on Wed Dec  1 10:27:22 2021
 
-Simulation for checking CI of OLS and std errors whilst increasing number of samples 
-with noise
+Simulation for DML vs OLS with linear data. Generates data and iterates through different scenarios. 
+Final functions generate CI graphs for each scenario.
 
 @author: danielscott
 """
 
+##Import libraries
 import numpy as np
 from scipy import stats
 from scipy.stats import bernoulli
@@ -21,26 +22,55 @@ import matplotlib.pyplot as plt
 from doubleml import DoubleMLData
 from doubleml import DoubleMLPLR
 
-
-seed = 123
-np.random.seed(seed)
-
-
 ########################
 #### Generate data #####
 ########################
 def gen_features(n_samples,n_features, c,treatment_prob, distribution, noise,seed):
+    """
+    Parameters
+    ----------
+    n_samples : int
+        The number of rows of data to be generated
+    n_features : int
+        The number of features to be generated
+    c : float
+        The predefined treatment effect
+    treatment_prob : float
+        The probability of having treatment
+    distribution : string
+        The distribution of the covariates to be generated
+    noise : float
+        A noise factor
+    seed : int
+        seed
+
+    Returns
+    -------
+
+    X : Array of float64
+        The synthetic data acting as the covariates for the causal inference
+    D: Array of int64
+        A list of 1's or 0's representing being in a treatment or not
+    dx: Array of float64
+        Treatment variable stacked with the covariate data
+    weights: Array of float64
+        randomly generated weights for the linear 
+    Y: Array of float64
+        The outcome 
+    """
+
+    #Generate gaussian covariates
     if distribution == 'gaussian':
         X = np.random.randn(n_samples, n_features)
         D =  bernoulli.rvs(p = treatment_prob,size=n_samples) # treatment var
         dx = np.column_stack((D,X))
         trt_effect = c
         weights = np.append(trt_effect, stats.norm.rvs(0, 1, size = n_features))#add the constant then random variabel
-#        weights = np.random.rand(n_features)
         Y = np.dot(dx,weights.T)
         if noise >0.0:
             Y += stats.norm.rvs(loc = 0, scale=noise,size=Y.shape)     
-    
+
+    #Generate bivariate covariates    
     elif distribution == 'bernoulli':
         # generate X features
         p_vec = np.random.uniform(size = n_features)
@@ -64,17 +94,24 @@ def gen_features(n_samples,n_features, c,treatment_prob, distribution, noise,see
     
     return X,dx,weights, Y, D
 
-#create empty df to hold 
+
+#create empty df to hold simulation results
 df = pd.DataFrame(columns=['Run', 'OLS','OLS_LB','OLS_UB','std_err','DML','DML_err', 'DML_LB','DML_UB','DML_t_stat','DML_reg','DML_reg_err', 'DML_reg_LB','DML_reg_UB','DML_reg_t_stat','num_samples','distribution','num_features','noise'])
 
-#define simulation parameters
-c = 0.5 #float
+#####################################
+#### Define simulation parameters ###
+#####################################
+
+c = 0.5 
 num_runs = [1,2,3] #array of integers
 data_distribution = ["bernoulli","gaussian"] #gaussian/bernoulli
 num_samples = [10000,100000,500000,1000000] #array of integers
 num_feats = [30] #array of integers
 noises = [0,0.5,2] #array of floats. normally distributed noise centered around 0. This value changes the std
 trt_prob = [0.9]
+#set some seed
+seed = 123
+np.random.seed(seed)
 
 ############################
 #### Execute simulation ####
@@ -84,20 +121,20 @@ for run in num_runs:
         for samples in num_samples:
             for dist in data_distribution:
                 for noise in noises:
-                #generate data
+                    
+                    #generate data
                     X,dx, weights,Y,D = gen_features(n_samples=samples,n_features=feature_num,c=c,treatment_prob=trt_prob,distribution=dist,noise=noise, seed=seed)
+                    
                     ######################################################################    
                     # OLS --------------------------------------------------     
                     ######################################################################
                     OLS = sm.OLS(Y,dx)
                     results = OLS.fit()        
                     
-                    ####
                     ##Add confidence interval for OLS
                     ols_LB = results.conf_int(alpha=0.05, cols=None)[0][0]
                     ols_UB = results.conf_int(alpha=0.05, cols=None)[0][1]            
                     std_err = results.bse[0]
-                    
                     
                     ######################################################################
                     # DML package                      -----------------------------------     
@@ -152,15 +189,49 @@ sns.set_style('whitegrid', {'axes.spines.top': False,
 ########################################
 #VISUALISATION FUNCTIONS               #
 ########################################
-#function to extract data to be visualised in a table the CI graph function
+#function to 
 def extract_table_text(table):
+    """
+    Helper function which extracts data to be visualised in a table the 
+    CI graph function
+    """
     cell_text=[]
     for row in range(len(table)):
         cell_text.append(table.iloc[row].round(3))
     return cell_text    
 
-#function to show OLS coefficients and their confidence intervals
 def generate_CI_graph(df,feats,samples,num_runs,distribution,noise, method):
+    """
+    Generate a graph showing coefficients and CI's. The inputs are used as to 
+    query the results dataframe.
+    
+    Parameters
+    ----------
+    df : df
+        A df containing the results of the simulation
+    feats : 
+        The number of features to filter the df to
+    samples : int
+        The number of rows of data to be generated
+    num_runs : int
+        The number of rows of data to be generated
+    distribution : string
+        The distribution of the covariates to be generated
+    noise : float
+        A noise factor
+    method : string
+        valid inputs are either 'OlS' or 'DML'
+
+    Returns
+    -------
+    Plot containing the filters provided above. Ideally should be run by 
+    iterating over the same combinations used in data generation
+    
+    i.e. for feature_num in num_feats:
+            for samples in num_samples:
+                generate_CI_graph
+
+    """
     meth = method
     meth_ub = method+"_UB"
     meth_lb = method + "_LB"
@@ -197,3 +268,6 @@ for feature_num in num_feats:
                 for noise in noises:
                     for meth in ["OLS","DML"]:
                         generate_CI_graph(df,feature_num,samples,num_runs,dist,noise,meth)
+                        
+                    
+                    

@@ -9,18 +9,12 @@ Created on Tue Nov 23 16:16:11 2021
 import numpy as np
 from scipy.stats import bernoulli
 import pandas as pd
-
-import math
 import statsmodels.api as sm
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LassoCV
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.model_selection import KFold
 from doubleml import DoubleMLData
 from doubleml import DoubleMLPLR
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
 
 def gen_features(n_samples,n_features, c, noise):
     X = np.random.randn(n_samples, n_features)
@@ -98,6 +92,8 @@ df['DML1'] = df['DML1'].str[0]
 
 mean_df = df.groupby(['No_feats'], axis=0).mean()
 
+
+#produce to graphs
 for i in range(1,max_no_feats):
     temp_df = df.query('No_feats== {}'.format(i))
     temp_df = temp_df.filter(items=['OLS', 'DML1','DML2'])
