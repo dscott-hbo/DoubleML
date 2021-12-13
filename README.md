@@ -26,4 +26,5 @@ Documentation and website: [https://docs.doubleml.org/](https://docs.doubleml.or
 		 ├── Bernoulli/             # comparison of gaussian features vs bernoulli features
 			 ├── CI_simulation.py   # script to run the simulation of gaussian vs bernoulli
 			 ├── CIplots/ 				# the visualisation of results of simulation
+			 ├── collinearity_sim.ipynb   #notebook containing the dataset with duplicate features and simulation
 		 └── README.md
